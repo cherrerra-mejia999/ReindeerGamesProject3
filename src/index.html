@@ -172,6 +172,26 @@
                     </div>
                     
                     <div class="config-section">
+                        <label class="config-label">Puzzle Type</label>
+                        <div class="puzzle-type-selector">
+                            <button class="puzzle-type-option active" data-type="numbers" id="numbersOption">
+                                <span>Numbers</span>
+                                <span class="type-desc">Classic 1-15 puzzle</span>
+                            </button>
+                            <button class="puzzle-type-option" data-type="image" id="imageOption">
+                                <span>Custom Image</span>
+                                <span class="type-desc">Upload your own</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="config-section" id="imageUploadSection" style="display: none;">
+                        <label class="config-label" for="puzzleImageUpload">Upload Puzzle Image</label>
+                        <input type="file" id="puzzleImageUpload" accept="image/*" class="config-file-input">
+                        <div id="imagePreview" class="image-preview"></div>
+                    </div>
+                    
+                    <div class="config-section">
                         <label class="config-label" for="difficultySelect">Difficulty Level</label>
                         <select id="difficultySelect" class="config-select">
                             <option value="easy">Beginner - Fewer moves required</option>
@@ -195,7 +215,7 @@
                 
                 <div class="config-preview">
                     <div class="preview-image-container">
-                        <img src="images/HappyHolidays.jpg" alt="Festive holiday scene" class="preview-image">
+                        <img src="images/Gingerbread.jpg" alt="Festive holiday scene" class="preview-image">
                     </div>
                     <div class="preview-info">
                         <h3>Game Tips</h3>
@@ -255,98 +275,6 @@
                         </svg>
                         Sounds
                     </button>
-                </div>
-                
-                <div class="requirements-panel">
-                    <h3>System Features</h3>
-                    <div class="requirements-list">
-                        <div class="requirement-item">
-                            <div class="requirement-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4>Social Platform</h4>
-                                <p>Secure authentication with competitive matchmaking</p>
-                            </div>
-                        </div>
-                        
-                        <div class="requirement-item">
-                            <div class="requirement-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4>Performance Analytics</h4>
-                                <p>Comprehensive tracking of moves, time, and efficiency</p>
-                            </div>
-                        </div>
-                        
-                        <div class="requirement-item">
-                            <div class="requirement-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4>Global Rankings</h4>
-                                <p>Real-time leaderboards across multiple categories</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <h3 style="margin-top: 2rem;">Custom Undergraduate Features</h3>
-                    <div class="requirements-list">
-                        <div class="requirement-item custom-feature">
-                            <div class="requirement-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4>Festive Theme System</h4>
-                                <p>Dynamic themes change based on performance and time of day</p>
-                            </div>
-                        </div>
-                        
-                        <div class="requirement-item custom-feature">
-                            <div class="requirement-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4>Gift & Reward System</h4>
-                                <p>Unlock unique achievements and collect special holiday gifts</p>
-                            </div>
-                        </div>
-                        
-                        <div class="requirement-item custom-feature">
-                            <div class="requirement-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4>Holiday Magic Power-ups</h4>
-                                <p>Use special abilities: Hints, Auto-solve corners, Freeze time</p>
-                            </div>
-                        </div>
-                        
-                        <div class="requirement-item custom-feature">
-                            <div class="requirement-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4>Christmas Story Mode</h4>
-                                <p>Engaging holiday narrative that unfolds as you solve puzzles</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>

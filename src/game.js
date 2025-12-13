@@ -6,7 +6,9 @@ class GameState {
             size: 4,
             difficulty: 'medium',
             mode: 'competitive',
-            competitiveMode: 'speed'
+            competitiveMode: 'speed',
+            puzzleType: 'numbers',
+            puzzleImage: null
         };
         this.game = {
             board: [],
@@ -217,6 +219,43 @@ function initConfig() {
             state.config.size = parseInt(e.currentTarget.dataset.size);
         });
     });
+    
+    // Puzzle type selector
+    const typeButtons = document.querySelectorAll('.puzzle-type-option');
+    typeButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            typeButtons.forEach(btn => btn.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            state.config.puzzleType = e.currentTarget.dataset.type;
+            
+            // Show/hide image upload section
+            const imageSection = document.getElementById('imageUploadSection');
+            if (state.config.puzzleType === 'image') {
+                imageSection.style.display = 'block';
+            } else {
+                imageSection.style.display = 'none';
+            }
+        });
+    });
+    
+    // Image upload handler
+    const imageInput = document.getElementById('puzzleImageUpload');
+    if (imageInput) {
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    state.config.puzzleImage = event.target.result;
+                    
+                    // Show preview
+                    const preview = document.getElementById('imagePreview');
+                    preview.innerHTML = `<img src="${event.target.result}" alt="Puzzle preview" style="max-width: 100%; border-radius: 8px;">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 }
 
 function launchGame() {
@@ -233,6 +272,14 @@ function launchGame() {
 // Game Initialization
 function initializeGame() {
     state.reset();
+    
+    // Reset power-ups for new game
+    state.customFeatures.powerups = {
+        hint: 3,
+        corner: 2,
+        freeze: 1
+    };
+    updatePowerupCounts();
     
     const board = document.getElementById('puzzleBoard');
     board.style.gridTemplateColumns = `repeat(${state.config.size}, 1fr)`;
@@ -270,6 +317,7 @@ function renderBoard() {
     board.innerHTML = '';
     
     const size = state.config.size;
+    const useImage = state.config.puzzleType === 'image' && state.config.puzzleImage;
     
     for (let row = 0; row < size; row++) {
         for (let col = 0; col < size; col++) {
@@ -280,7 +328,19 @@ function renderBoard() {
             if (value === 0) {
                 tile.classList.add('empty');
             } else {
-                tile.textContent = value;
+                if (useImage) {
+                    // Image-based tile
+                    tile.style.backgroundImage = `url(${state.config.puzzleImage})`;
+                    tile.style.backgroundSize = `${size * 100}% ${size * 100}%`;
+                    
+                    // Calculate position based on tile number
+                    const tileRow = Math.floor((value - 1) / size);
+                    const tileCol = (value - 1) % size;
+                    tile.style.backgroundPosition = `${-tileCol * 100}% ${-tileRow * 100}%`;
+                } else {
+                    // Number-based tile
+                    tile.textContent = value;
+                }
                 tile.onclick = () => handleTileClick(row, col);
             }
             
