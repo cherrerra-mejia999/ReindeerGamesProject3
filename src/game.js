@@ -232,9 +232,23 @@ function initConfig() {
             const imageSection = document.getElementById('imageUploadSection');
             if (state.config.puzzleType === 'image') {
                 imageSection.style.display = 'block';
+                loadImageGallery();
             } else {
                 imageSection.style.display = 'none';
             }
+        });
+    });
+    
+    // Image source tabs
+    const sourceTabs = document.querySelectorAll('.image-source-tab');
+    sourceTabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            sourceTabs.forEach(t => t.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            
+            const source = e.currentTarget.dataset.source;
+            document.getElementById('uploadImageArea').style.display = source === 'upload' ? 'block' : 'none';
+            document.getElementById('galleryImageArea').style.display = source === 'gallery' ? 'block' : 'none';
         });
     });
     
@@ -247,15 +261,67 @@ function initConfig() {
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     state.config.puzzleImage = event.target.result;
-                    
-                    // Show preview
-                    const preview = document.getElementById('imagePreview');
-                    preview.innerHTML = `<img src="${event.target.result}" alt="Puzzle preview" style="max-width: 100%; border-radius: 8px;">`;
+                    showImagePreview(event.target.result);
                 };
                 reader.readAsDataURL(file);
             }
         });
     }
+}
+
+function loadImageGallery() {
+    const gallery = document.getElementById('imageGallery');
+    
+    // Pre-loaded images from images folder
+    const galleryImages = [
+        {
+            src: 'images/Holiday-Video-Ideas-2019-1920x1080p-1024x576.jpg',
+            name: 'Holiday Celebration'
+        },
+        {
+            src: 'images/festive-christmas-scene-gingerbread-man-cookie-red-ornaments-pinecones-cozy-knitted-scarf-creating-warm-joyful-holiday-328396686.webp',
+            name: 'Festive Scene'
+        },
+        {
+            src: 'images/istockphoto-1065457848-612x612.jpg',
+            name: 'Winter Wonderland'
+        }
+    ];
+    
+    gallery.innerHTML = '';
+    
+    galleryImages.forEach((image, index) => {
+        const imgContainer = document.createElement('div');
+        imgContainer.className = 'gallery-image-item';
+        imgContainer.innerHTML = `
+            <img src="${image.src}" alt="${image.name}" loading="lazy">
+            <span class="gallery-image-name">${image.name}</span>
+        `;
+        
+        imgContainer.addEventListener('click', () => {
+            // Remove active class from all items
+            document.querySelectorAll('.gallery-image-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active class to selected item
+            imgContainer.classList.add('active');
+            
+            // Set as puzzle image
+            state.config.puzzleImage = image.src;
+            showImagePreview(image.src);
+        });
+        
+        gallery.appendChild(imgContainer);
+    });
+}
+
+function showImagePreview(imageSrc) {
+    const preview = document.getElementById('imagePreview');
+    preview.innerHTML = `
+        <p class="preview-label">Selected Image:</p>
+        <img src="${imageSrc}" alt="Puzzle preview" style="max-width: 100%; border-radius: 8px;">
+    `;
 }
 
 function launchGame() {
