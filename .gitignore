@@ -1,0 +1,25 @@
+# Sensitive Files - DO NOT COMMIT WITH REAL PASSWORDS
+config.php
+install.php
+
+# If you want to include them, make sure passwords are placeholders
+# Then remove these lines from .gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+error_log
+
+# Temporary files
+*.tmp
+*.bak
