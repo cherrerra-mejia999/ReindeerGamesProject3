@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Snowfall Effect -->
+    <div id="snowfall-container" class="snowfall-container"></div>
+    
     <div id="app">
         <!-- Authentication Screen -->
         <section id="authScreen" class="screen active">
@@ -93,7 +96,7 @@
             <div class="dashboard-content">
                 <div class="hero-section">
                     <div class="hero-image-container">
-                        <img src="images/HappyHoliday.jpg" alt="Holiday celebration" class="hero-image">
+                        <img src="images/HappyHolidays.jpg" alt="Holiday celebration" class="hero-image">
                     </div>
                     <div class="hero-text">
                         <h2>Classic Fifteen Puzzle</h2>
@@ -231,7 +234,7 @@
                 
                 <div class="config-preview">
                     <div class="preview-image-container">
-                        <img src="GingerbreadMan.jpg" alt="Festive holiday scene" class="preview-image">
+                        <img src="images/Gingerbread.jpg" alt="Festive holiday scene" class="preview-image">
                     </div>
                     <div class="preview-info">
                         <h3>Game Tips</h3>
@@ -267,6 +270,32 @@
             </nav>
             
             <div class="game-container">
+                <!-- Power-ups Panel (Left Side) -->
+                <div class="powerups-panel-sidebar" id="powerupsPanel">
+                    <h4>Reindeer's Gift Power-ups</h4>
+                    <div class="powerup-buttons-sidebar">
+                        <button class="powerup-button" onclick="usePowerup('hint')" id="hintPowerup">
+                            <span class="powerup-icon">🦌</span>
+                            <span class="powerup-name">Reindeer Vision</span>
+                            <span class="powerup-desc">Show optimal move</span>
+                            <span class="powerup-count" id="hintCount">3</span>
+                        </button>
+                        <button class="powerup-button" onclick="usePowerup('corner')" id="cornerPowerup">
+                            <span class="powerup-icon">🎅</span>
+                            <span class="powerup-name">Santa's Helper</span>
+                            <span class="powerup-desc">Auto 3 moves</span>
+                            <span class="powerup-count" id="cornerCount">2</span>
+                        </button>
+                        <button class="powerup-button" onclick="usePowerup('freeze')" id="freezePowerup">
+                            <span class="powerup-icon">❄️</span>
+                            <span class="powerup-name">North Pole Blizzard</span>
+                            <span class="powerup-desc">Slow time 50%</span>
+                            <span class="powerup-count" id="freezeCount">1</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Game Board (Center) -->
                 <div class="game-board-wrapper">
                     <div id="puzzleBoard" class="puzzle-board"></div>
                     <p class="game-instruction">Click tiles adjacent to the empty space to move them</p>
@@ -456,27 +485,6 @@
             </div>
         </div>
 
-        <!-- Power-ups Panel (shown during game) -->
-        <div class="powerups-panel" id="powerupsPanel">
-            <h4>Reindeer's Gift Power-ups</h4>
-            <div class="powerup-buttons">
-                <button class="powerup-button" onclick="usePowerup('hint')" id="hintPowerup">
-                    <span class="powerup-icon">🦌</span>
-                    <span>Reindeer Vision</span>
-                    <span class="powerup-count" id="hintCount">3</span>
-                </button>
-                <button class="powerup-button" onclick="usePowerup('corner')" id="cornerPowerup">
-                    <span class="powerup-icon">🎅</span>
-                    <span>Santa's Helper</span>
-                    <span class="powerup-count" id="cornerCount">2</span>
-                </button>
-                <button class="powerup-button" onclick="usePowerup('freeze')" id="freezePowerup">
-                    <span class="powerup-icon">❄️</span>
-                    <span>North Pole Blizzard</span>
-                    <span class="powerup-count" id="freezeCount">1</span>
-                </button>
-            </div>
-        </div>
     </div>
 
     <script src="game.js"></script>

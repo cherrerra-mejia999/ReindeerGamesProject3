@@ -272,19 +272,27 @@ function initConfig() {
 function loadImageGallery() {
     const gallery = document.getElementById('imageGallery');
     
-    // Pre-loaded images from images folder
+    // Pre-loaded images from images folder - YOUR ACTUAL IMAGES
     const galleryImages = [
         {
-            src: 'images/Holiday-Video-Ideas-2019-1920x1080p-1024x576.jpg',
+            src: 'images/HappyHolidays.jpg',
             name: 'Holiday Celebration'
         },
         {
-            src: 'images/festive-christmas-scene-gingerbread-man-cookie-red-ornaments-pinecones-cozy-knitted-scarf-creating-warm-joyful-holiday-328396686.webp',
+            src: 'images/Gingerbread.jpg',
             name: 'Festive Scene'
         },
         {
-            src: 'images/istockphoto-1065457848-612x612.jpg',
+            src: 'images/Snowman.jpg',
             name: 'Winter Wonderland'
+        },
+        {
+            src: 'images/MarshmellowSnowman.jpg',
+            name: 'Marshmallow Snowman'
+        },
+        {
+            src: 'images/Coffee.jpg',
+            name: 'Cozy Coffee'
         }
     ];
     
@@ -331,7 +339,6 @@ function launchGame() {
     }
     
     showScreen('gameScreen');
-    showPowerups(); // Show power-ups panel
     initializeGame();
 }
 
@@ -565,11 +572,9 @@ function resetGame() {
 function confirmExit() {
     if (state.game.isActive) {
         if (confirm('Exit game? Progress will be lost.')) {
-            hidePowerups();
             returnToDashboard();
         }
     } else {
-        hidePowerups();
         returnToDashboard();
     }
 }
@@ -591,7 +596,6 @@ function toggleSounds() {
 function handleVictory() {
     stopTimer();
     state.game.isActive = false;
-    hidePowerups(); // Hide power-ups panel
     
     const efficiency = utils.calculateEfficiency(state.game.moves, state.game.optimalMoves);
     
@@ -712,6 +716,27 @@ function showUserStats() {
 function closeStatsModal() {
     document.getElementById('statsModal').classList.remove('active');
 }
+
+// Close modals when clicking outside
+document.addEventListener('click', (e) => {
+    // Close stats modal
+    const statsModal = document.getElementById('statsModal');
+    if (statsModal && e.target === statsModal) {
+        closeStatsModal();
+    }
+    
+    // Close reward modal
+    const rewardModal = document.getElementById('rewardModal');
+    if (rewardModal && e.target === rewardModal) {
+        closeRewardModal();
+    }
+    
+    // Close story modal
+    const storyModal = document.getElementById('storyModal');
+    if (storyModal && e.target === storyModal) {
+        closeStoryModal();
+    }
+});
 
 // Keyboard Controls
 function initKeyboardControls() {
@@ -885,17 +910,6 @@ function closeRewardModal() {
 }
 
 // Feature 3: Reindeer's Gift Power-ups (Unique to this implementation)
-function showPowerups() {
-    const panel = document.getElementById('powerupsPanel');
-    panel.classList.add('active');
-    updatePowerupCounts();
-}
-
-function hidePowerups() {
-    const panel = document.getElementById('powerupsPanel');
-    panel.classList.remove('active');
-}
-
 function updatePowerupCounts() {
     document.getElementById('hintCount').textContent = state.customFeatures.powerups.hint;
     document.getElementById('cornerCount').textContent = state.customFeatures.powerups.corner;
@@ -1112,6 +1126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initConfig();
     initKeyboardControls();
     checkSession();
+    initSnowfall(); // Add snowfall effect
     
     // Load custom features
     const savedTheme = localStorage.getItem('theme');
@@ -1132,3 +1147,51 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('- Reindeer\'s Gift Power-ups: Active');
     console.log('- Santa\'s Lost Delivery Route Story: Active');
 });
+
+// Snowfall Effect
+function initSnowfall() {
+    const container = document.getElementById('snowfall-container');
+    const snowflakeCount = 50; // Number of snowflakes
+    
+    for (let i = 0; i < snowflakeCount; i++) {
+        createSnowflake(container);
+    }
+    
+    // Continuously create new snowflakes
+    setInterval(() => {
+        createSnowflake(container);
+    }, 300);
+}
+
+function createSnowflake(container) {
+    const snowflake = document.createElement('div');
+    snowflake.classList.add('snowflake');
+    snowflake.textContent = '❄';
+    
+    // Random horizontal position
+    snowflake.style.left = Math.random() * 100 + '%';
+    
+    // Random size
+    const size = Math.random() * 0.5 + 0.5; // 0.5 to 1
+    snowflake.style.fontSize = size + 'em';
+    
+    // Random animation duration (fall speed)
+    const duration = Math.random() * 3 + 5; // 5 to 8 seconds
+    snowflake.style.animationDuration = duration + 's';
+    
+    // Random delay
+    const delay = Math.random() * 2;
+    snowflake.style.animationDelay = delay + 's';
+    
+    // Random opacity
+    snowflake.style.opacity = Math.random() * 0.6 + 0.4; // 0.4 to 1
+    
+    container.appendChild(snowflake);
+    
+    // Remove snowflake after animation completes
+    setTimeout(() => {
+        if (snowflake.parentNode) {
+            snowflake.remove();
+        }
+    }, (duration + delay) * 1000);
+}
