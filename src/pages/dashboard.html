@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Reindeer Games</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/leaderboard.css">
+</head>
+<body>
+    <!-- Snowfall Effect -->
+    <div id="snowfall-container" class="snowfall-container"></div>
+    
+    <nav class="main-nav">
+        <div class="nav-brand">
+            <h1>Reindeer Games</h1>
+        </div>
+        <div class="nav-user">
+            <span class="user-greeting">Hello, <span id="navUsername"></span></span>
+            <button class="nav-button" onclick="showUserStats()">Statistics</button>
+            <button class="nav-button secondary" onclick="handleLogout()">Sign Out</button>
+        </div>
+    </nav>
+    
+    <div class="dashboard-content">
+        <div class="hero-section">
+            <div class="hero-image-container">
+                <img src="../images/HappyHolidays.jpg" alt="Holiday celebration" class="hero-image">
+            </div>
+            <div class="hero-text">
+                <h2>Classic Fifteen Puzzle</h2>
+                <p class="hero-description">Test your strategic thinking with the timeless sliding tile puzzle. Compete globally, track your progress, and master multiple difficulty levels.</p>
+            </div>
+        </div>
+        
+        <div class="modes-grid">
+            <div class="mode-card primary-mode">
+                <div class="mode-header">
+                    <h3>Competitive Play</h3>
+                    <span class="mode-badge">Featured</span>
+                </div>
+                <p class="mode-description">Challenge yourself in timed competitions with global rankings and detailed performance analytics.</p>
+                <ul class="mode-features">
+                    <li>Global leaderboards</li>
+                    <li>Performance tracking</li>
+                    <li>Multiple difficulty tiers</li>
+                </ul>
+                <button class="mode-button" onclick="startCompetitive()">Begin Challenge</button>
+            </div>
+            
+            <div class="mode-card">
+                <div class="mode-header">
+                    <h3>Practice Mode</h3>
+                </div>
+                <p class="mode-description">Hone your skills without pressure. Perfect for learning strategies and improving efficiency.</p>
+                <ul class="mode-features">
+                    <li>Unlimited attempts</li>
+                    <li>No time pressure</li>
+                    <li>Skill development</li>
+                </ul>
+                <button class="mode-button secondary" onclick="startPractice()">Practice Now</button>
+            </div>
+            
+            <div class="mode-card">
+                <div class="mode-header">
+                    <h3>Rankings</h3>
+                </div>
+                <p class="mode-description">View global standings, compare your performance, and track your competitive progress.</p>
+                <ul class="mode-features">
+                    <li>Top player rankings</li>
+                    <li>Category filters</li>
+                    <li>Historical data</li>
+                </ul>
+                <button class="mode-button secondary" onclick="window.location='leaderboard.html'">View Rankings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Modal -->
+    <div id="statsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Your Statistics</h3>
+                <button class="modal-close" onclick="closeStatsModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="stats-content">
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-number" id="totalGames">0</span>
+                        <span class="stat-title">Games Played</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="avgTime">-</span>
+                        <span class="stat-title">Average Time</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="avgMoves">-</span>
+                        <span class="stat-title">Average Moves</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="bestScore">-</span>
+                        <span class="stat-title">Best Score</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Selector -->
+    <div class="theme-selector" id="themeSelector">
+        <button class="theme-toggle" onclick="toggleThemeMenu()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            Theme
+        </button>
+        <div class="theme-menu" id="themeMenu">
+            <button class="theme-option" onclick="setTheme('aurora')">Northern Lights</button>
+            <button class="theme-option" onclick="setTheme('workshop')">Santa's Workshop</button>
+            <button class="theme-option" onclick="setTheme('icepalace')">Ice Palace</button>
+            <button class="theme-option" onclick="setTheme('candlelight')">Candlelight Christmas</button>
+        </div>
+    </div>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/state.js"></script>
+    <script src="../js/snowfall.js"></script>
+    <script src="../js/features.js"></script>
+    <script src="../js/dashboard.js"></script>
+</body>
+</html>

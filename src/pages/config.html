@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Configuration | Reindeer Games</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/config.css">
+</head>
+<body>
+    <!-- Snowfall Effect -->
+    <div id="snowfall-container" class="snowfall-container"></div>
+    
+    <nav class="main-nav">
+        <button class="back-button" onclick="window.location='dashboard.html'">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"/>
+            </svg>
+            Back to Dashboard
+        </button>
+    </nav>
+    
+    <div class="config-content">
+        <div class="config-panel">
+            <h2>Configure Your Game</h2>
+            <p class="config-subtitle">Customize puzzle settings to match your skill level</p>
+            
+            <div class="config-section">
+                <label class="config-label">Puzzle Size</label>
+                <div class="size-selector">
+                    <button class="size-option" data-size="3">3×3<span class="size-desc">Quick</span></button>
+                    <button class="size-option active" data-size="4">4×4<span class="size-desc">Classic</span></button>
+                    <button class="size-option" data-size="5">5×5<span class="size-desc">Challenge</span></button>
+                    <button class="size-option" data-size="6">6×6<span class="size-desc">Expert</span></button>
+                </div>
+            </div>
+            
+            <div class="config-section">
+                <label class="config-label">Puzzle Type</label>
+                <div class="puzzle-type-selector">
+                    <button class="puzzle-type-option active" data-type="numbers" id="numbersOption">
+                        <span>Numbers</span>
+                        <span class="type-desc">Classic 1-15 puzzle</span>
+                    </button>
+                    <button class="puzzle-type-option" data-type="image" id="imageOption">
+                        <span>Custom Image</span>
+                        <span class="type-desc">Upload your own</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="config-section" id="imageUploadSection" style="display: none;">
+                <label class="config-label">Choose Image Source</label>
+                <div class="image-source-tabs">
+                    <button class="image-source-tab active" data-source="upload">Upload Image</button>
+                    <button class="image-source-tab" data-source="gallery">Choose from Gallery</button>
+                </div>
+                
+                <div id="uploadImageArea" class="image-source-area active">
+                    <label class="config-label" for="puzzleImageUpload">Upload Your Image</label>
+                    <input type="file" id="puzzleImageUpload" accept="image/*" class="config-file-input">
+                </div>
+                
+                <div id="galleryImageArea" class="image-source-area" style="display: none;">
+                    <label class="config-label">Select from Gallery</label>
+                    <div class="image-gallery" id="imageGallery">
+                        <!-- Images will be loaded here -->
+                    </div>
+                </div>
+                
+                <div id="imagePreview" class="image-preview"></div>
+            </div>
+            
+            <div class="config-section">
+                <label class="config-label" for="difficultySelect">Difficulty Level</label>
+                <select id="difficultySelect" class="config-select">
+                    <option value="easy">Beginner - Fewer moves required</option>
+                    <option value="medium" selected>Intermediate - Balanced challenge</option>
+                    <option value="hard">Advanced - Complex patterns</option>
+                    <option value="expert">Expert - Maximum complexity</option>
+                </select>
+            </div>
+            
+            <div class="config-section" id="competitiveSettings">
+                <label class="config-label" for="modeSelect">Competition Type</label>
+                <select id="modeSelect" class="config-select">
+                    <option value="speed">Speed Solving - Fastest time wins</option>
+                    <option value="moves">Move Efficiency - Fewest moves wins</option>
+                    <option value="combo">Combined Score - Balance of both</option>
+                </select>
+            </div>
+            
+            <button class="primary-button launch-button" onclick="launchGame()">Launch Game</button>
+        </div>
+        
+        <div class="config-preview">
+            <div class="preview-image-container">
+                <img src="../images/Gingerbread.jpg" alt="Festive holiday scene" class="preview-image">
+            </div>
+            <div class="preview-info">
+                <h3>Game Tips</h3>
+                <ul class="tips-list">
+                    <li>Plan several moves ahead</li>
+                    <li>Work on positioning corner pieces first</li>
+                    <li>Use empty space strategically</li>
+                    <li>Practice pattern recognition</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/state.js"></script>
+    <script src="../js/snowfall.js"></script>
+    <script src="../js/features.js"></script>
+    <script src="../js/config.js"></script>
+</body>
+</html>

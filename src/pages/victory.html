@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Victory! | Reindeer Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/leaderboard.css">
+</head>
+<body>
+    <div id="snowfall-container" class="snowfall-container"></div>
+    
+    <div class="victory-container">
+        <div class="victory-content">
+            <div class="victory-icon">
+                <svg width="120" height="120" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <h2>Puzzle Completed</h2>
+            <p class="victory-message">Excellent work! Your solution has been recorded.</p>
+            
+            <div class="results-grid">
+                <div class="result-card">
+                    <span class="result-label">Time</span>
+                    <span class="result-value" id="finalTime">-</span>
+                </div>
+                <div class="result-card">
+                    <span class="result-label">Moves</span>
+                    <span class="result-value" id="finalMoves">-</span>
+                </div>
+                <div class="result-card">
+                    <span class="result-label">Efficiency</span>
+                    <span class="result-value" id="finalEfficiency">-</span>
+                </div>
+            </div>
+            
+            <div class="victory-actions">
+                <button class="primary-button" onclick="window.location='config.html'">Play Again</button>
+                <button class="secondary-button" onclick="window.location='dashboard.html'">Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/state.js"></script>
+    <script src="../js/snowfall.js"></script>
+</body>
+</html>

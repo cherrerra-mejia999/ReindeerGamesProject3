@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard | Reindeer Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/leaderboard.css">
+</head>
+<body>
+    <div id="snowfall-container" class="snowfall-container"></div>
+    
+    <nav class="main-nav">
+        <button class="back-button" onclick="window.location='dashboard.html'">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"/>
+            </svg>
+            Back to Dashboard
+        </button>
+    </nav>
+    
+    <div class="leaderboard-content">
+        <div class="leaderboard-header">
+            <h2>Global Rankings</h2>
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-category="speed">Speed</button>
+                <button class="filter-tab" data-category="moves">Efficiency</button>
+                <button class="filter-tab" data-category="overall">Combined</button>
+            </div>
+        </div>
+        
+        <div class="leaderboard-table-container">
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Player</th>
+                        <th>Time</th>
+                        <th>Moves</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/state.js"></script>
+    <script src="../js/snowfall.js"></script>
+</body>
+</html>

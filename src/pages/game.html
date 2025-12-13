@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Game | Reindeer Games</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/game.css">
+    <link rel="stylesheet" href="../css/leaderboard.css">
+</head>
+<body>
+    <!-- Snowfall Effect -->
+    <div id="snowfall-container" class="snowfall-container"></div>
+    
+    <nav class="game-nav">
+        <button class="back-button" onclick="confirmExit()">Exit Game</button>
+        <div class="game-stats-bar">
+            <div class="stat-display">
+                <span class="stat-label">Time</span>
+                <span class="stat-value" id="timerDisplay">0:00</span>
+            </div>
+            <div class="stat-display">
+                <span class="stat-label">Moves</span>
+                <span class="stat-value" id="movesDisplay">0</span>
+            </div>
+            <div class="stat-display">
+                <span class="stat-label">Efficiency</span>
+                <span class="stat-value" id="efficiencyDisplay">100%</span>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="game-container">
+        <!-- Power-ups Panel (Left Sidebar) -->
+        <div class="powerups-panel-sidebar" id="powerupsPanel">
+            <h4>Reindeer's Gift Power-ups</h4>
+            <div class="powerup-buttons-sidebar">
+                <button class="powerup-button" onclick="usePowerup('hint')" id="hintPowerup">
+                    <span class="powerup-icon">🦌</span>
+                    <span class="powerup-name">Reindeer Vision</span>
+                    <span class="powerup-desc">Show optimal move</span>
+                    <span class="powerup-count" id="hintCount">3</span>
+                </button>
+                <button class="powerup-button" onclick="usePowerup('corner')" id="cornerPowerup">
+                    <span class="powerup-icon">🎅</span>
+                    <span class="powerup-name">Santa's Helper</span>
+                    <span class="powerup-desc">Auto 3 moves</span>
+                    <span class="powerup-count" id="cornerCount">2</span>
+                </button>
+                <button class="powerup-button" onclick="usePowerup('freeze')" id="freezePowerup">
+                    <span class="powerup-icon">❄️</span>
+                    <span class="powerup-name">North Pole Blizzard</span>
+                    <span class="powerup-desc">Slow time 50%</span>
+                    <span class="powerup-count" id="freezeCount">1</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Game Board (Center) -->
+        <div class="game-board-wrapper">
+            <div id="puzzleBoard" class="puzzle-board"></div>
+            <p class="game-instruction">Click tiles adjacent to the empty space to move them</p>
+            
+            <div class="game-controls">
+                <button class="control-button" onclick="shuffleGame()">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"/>
+                    </svg>
+                    Shuffle
+                </button>
+                <button class="control-button" onclick="resetGame()">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clip-rule="evenodd"/>
+                    </svg>
+                    Reset
+                </button>
+                <button class="control-button" onclick="toggleSounds()" id="soundButton">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" id="soundIcon">
+                        <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"/>
+                    </svg>
+                    Sounds
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reward Modal -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content reward-modal-content">
+            <div class="reward-animation">
+                <div class="reward-icon" id="rewardIcon">🎁</div>
+                <h2 id="rewardTitle">Achievement Unlocked!</h2>
+                <p id="rewardDescription">You've earned a special reward!</p>
+                <div class="reward-item" id="rewardItem"></div>
+            </div>
+            <button class="primary-button" onclick="closeRewardModal()">Collect Reward</button>
+        </div>
+    </div>
+
+    <!-- Story Mode Modal -->
+    <div id="storyModal" class="modal">
+        <div class="modal-content story-modal-content">
+            <div class="modal-header">
+                <h3>Christmas Story</h3>
+                <button class="modal-close" onclick="closeStoryModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="story-content">
+                <div class="story-chapter">
+                    <h4 id="storyChapterTitle">Chapter 1</h4>
+                    <p id="storyText">Loading story...</p>
+                </div>
+                <div class="story-progress">
+                    <span>Story Progress: <span id="storyProgress">0/10</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Selector -->
+    <div class="theme-selector" id="themeSelector">
+        <button class="theme-toggle" onclick="toggleThemeMenu()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            Theme
+        </button>
+        <div class="theme-menu" id="themeMenu">
+            <button class="theme-option" onclick="setTheme('aurora')">Northern Lights</button>
+            <button class="theme-option" onclick="setTheme('workshop')">Santa's Workshop</button>
+            <button class="theme-option" onclick="setTheme('icepalace')">Ice Palace</button>
+            <button class="theme-option" onclick="setTheme('candlelight')">Candlelight Christmas</button>
+        </div>
+    </div>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/state.js"></script>
+    <script src="../js/snowfall.js"></script>
+    <script src="../js/game.js"></script>
+    <script src="../js/powerups.js"></script>
+    <script src="../js/features.js"></script>
+</body>
+</html>
