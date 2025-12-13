@@ -26,7 +26,7 @@ function initAuth() {
     document.getElementById('registerForm').addEventListener('submit', handleRegister);
 }
 
-function handleLogin(e) {
+async function handleLogin(e) {
     e.preventDefault();
     const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
@@ -36,20 +36,32 @@ function handleLogin(e) {
         return;
     }
 
-    // Simulate authentication
-    state.user = {
-        id: Date.now(),
-        username: username,
-        email: `${username}@example.com`
-    };
-
-    localStorage.setItem('user', JSON.stringify(state.user));
+    // Call API to login
+    const result = await loginUser(username, password);
     
-    // Redirect to dashboard
-    window.location.href = 'pages/dashboard.html';
+    if (result.success) {
+        state.user = result.data;
+        localStorage.setItem('user', JSON.stringify(result.data));
+        
+        // Load user profile (powerups, story progress, theme)
+        const profile = await getUserProfile(result.data.user_id);
+        if (profile.success) {
+            localStorage.setItem('powerups', JSON.stringify({
+                hint: profile.data.powerup_hint,
+                corner: profile.data.powerup_corner,
+                freeze: profile.data.powerup_freeze
+            }));
+            localStorage.setItem('storyProgress', profile.data.story_progress);
+            localStorage.setItem('theme', profile.data.current_theme);
+        }
+        
+        window.location.href = 'pages/dashboard.html';
+    } else {
+        alert(result.message);
+    }
 }
 
-function handleRegister(e) {
+async function handleRegister(e) {
     e.preventDefault();
     const username = document.getElementById('registerUsername').value.trim();
     const email = document.getElementById('registerEmail').value.trim();
@@ -65,16 +77,28 @@ function handleRegister(e) {
         return;
     }
 
-    state.user = {
-        id: Date.now(),
-        username: username,
-        email: email
-    };
-
-    localStorage.setItem('user', JSON.stringify(state.user));
+    // Call API to create account
+    const result = await registerUser(username, email, password);
     
-    // Redirect to dashboard
-    window.location.href = 'pages/dashboard.html';
+    if (result.success) {
+        localStorage.setItem('user', JSON.stringify(result.data));
+        
+        // Load user profile (gets initial powerups and story progress)
+        const profile = await getUserProfile(result.data.user_id);
+        if (profile.success) {
+            localStorage.setItem('powerups', JSON.stringify({
+                hint: profile.data.powerup_hint,
+                corner: profile.data.powerup_corner,
+                freeze: profile.data.powerup_freeze
+            }));
+            localStorage.setItem('storyProgress', profile.data.story_progress);
+        }
+        
+        alert('Account created successfully!');
+        window.location.href = 'pages/dashboard.html';
+    } else {
+        alert(result.message);
+    }
 }
 
 function handleLogout() {
