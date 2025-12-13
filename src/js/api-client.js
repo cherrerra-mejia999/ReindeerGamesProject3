@@ -1,9 +1,16 @@
-const API_URL = '../php/api.php';
+// Use absolute path - works from any page
+// UPDATE THIS if your folder name is different!
+const API_URL = '/~cherreramejia2/reindeer-games/php/api.php';
+
+console.log('API URL:', API_URL); // Debug: see what path is being used
 
 // Helper function to make API calls
 async function apiCall(action, data = {}) {
     try {
-        const response = await fetch(`${API_URL}?action=${action}`, {
+        const fullURL = `${API_URL}?action=${action}`;
+        console.log('Calling API:', fullURL); // Debug
+        
+        const response = await fetch(fullURL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -11,7 +18,22 @@ async function apiCall(action, data = {}) {
             body: JSON.stringify({ action, ...data })
         });
         
+        // Check if response is OK
+        if (!response.ok) {
+            console.error('API HTTP Error:', response.status, response.statusText);
+            return { success: false, message: `Server error: ${response.status} ${response.statusText}` };
+        }
+        
+        // Check if response is actually JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('API returned non-JSON response:', text);
+            return { success: false, message: 'Server error: API returned HTML instead of JSON. Check if PHP file exists.' };
+        }
+        
         const result = await response.json();
+        console.log('API response:', result); // Debug
         return result;
     } catch (error) {
         console.error('API Error:', error);
