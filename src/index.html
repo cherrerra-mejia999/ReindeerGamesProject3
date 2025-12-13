@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holiday Puzzle Challenge | Fifteen Puzzle Competition</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Authentication Screen -->
+        <section id="authScreen" class="screen active">
+            <div class="auth-container">
+                <div class="auth-visual">
+                    <div class="auth-image-wrapper">
+                        <img src="images/istockphoto-1065457848-612x612.jpg" alt="Winter scene" class="auth-bg-image">
+                        <div class="auth-overlay"></div>
+                    </div>
+                    <div class="auth-content-overlay">
+                        <h1 class="brand-title">Holiday Puzzle Challenge</h1>
+                        <p class="brand-subtitle">Strategic sliding tile competition</p>
+                    </div>
+                </div>
+                
+                <div class="auth-form-section">
+                    <div class="form-tabs">
+                        <button class="tab-button active" data-form="login">Sign In</button>
+                        <button class="tab-button" data-form="register">Create Account</button>
+                    </div>
+                    
+                    <form id="loginForm" class="auth-form active">
+                        <div class="form-header">
+                            <h2>Welcome Back</h2>
+                            <p>Continue your puzzle journey</p>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="loginUsername">Username or Email</label>
+                            <input type="text" id="loginUsername" name="username" required autocomplete="username">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" name="password" required autocomplete="current-password">
+                        </div>
+                        
+                        <button type="submit" class="primary-button">Sign In</button>
+                    </form>
+                    
+                    <form id="registerForm" class="auth-form">
+                        <div class="form-header">
+                            <h2>Create Account</h2>
+                            <p>Join the competitive puzzle community</p>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="registerUsername">Username</label>
+                            <input type="text" id="registerUsername" name="username" required autocomplete="username">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="registerEmail">Email Address</label>
+                            <input type="email" id="registerEmail" name="email" required autocomplete="email">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="registerPassword">Password</label>
+                            <input type="password" id="registerPassword" name="password" required autocomplete="new-password">
+                        </div>
+                        
+                        <button type="submit" class="primary-button">Create Account</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Dashboard -->
+        <section id="dashboard" class="screen">
+            <nav class="main-nav">
+                <div class="nav-brand">
+                    <h1>Holiday Puzzle Challenge</h1>
+                </div>
+                <div class="nav-user">
+                    <span class="user-greeting">Hello, <span id="navUsername"></span></span>
+                    <button class="nav-button" onclick="showUserStats()">Statistics</button>
+                    <button class="nav-button secondary" onclick="handleLogout()">Sign Out</button>
+                </div>
+            </nav>
+            
+            <div class="dashboard-content">
+                <div class="hero-section">
+                    <div class="hero-image-container">
+                        <img src="images/Holiday-Video-Ideas-2019-1920x1080p-1024x576.jpg" alt="Holiday celebration" class="hero-image">
+                    </div>
+                    <div class="hero-text">
+                        <h2>Classic Fifteen Puzzle</h2>
+                        <p class="hero-description">Test your strategic thinking with the timeless sliding tile puzzle. Compete globally, track your progress, and master multiple difficulty levels.</p>
+                    </div>
+                </div>
+                
+                <div class="modes-grid">
+                    <div class="mode-card primary-mode">
+                        <div class="mode-header">
+                            <h3>Competitive Play</h3>
+                            <span class="mode-badge">Featured</span>
+                        </div>
+                        <p class="mode-description">Challenge yourself in timed competitions with global rankings and detailed performance analytics.</p>
+                        <ul class="mode-features">
+                            <li>Global leaderboards</li>
+                            <li>Performance tracking</li>
+                            <li>Multiple difficulty tiers</li>
+                        </ul>
+                        <button class="mode-button" onclick="startCompetitive()">Begin Challenge</button>
+                    </div>
+                    
+                    <div class="mode-card">
+                        <div class="mode-header">
+                            <h3>Practice Mode</h3>
+                        </div>
+                        <p class="mode-description">Hone your skills without pressure. Perfect for learning strategies and improving efficiency.</p>
+                        <ul class="mode-features">
+                            <li>Unlimited attempts</li>
+                            <li>No time pressure</li>
+                            <li>Skill development</li>
+                        </ul>
+                        <button class="mode-button secondary" onclick="startPractice()">Practice Now</button>
+                    </div>
+                    
+                    <div class="mode-card">
+                        <div class="mode-header">
+                            <h3>Rankings</h3>
+                        </div>
+                        <p class="mode-description">View global standings, compare your performance, and track your competitive progress.</p>
+                        <ul class="mode-features">
+                            <li>Top player rankings</li>
+                            <li>Category filters</li>
+                            <li>Historical data</li>
+                        </ul>
+                        <button class="mode-button secondary" onclick="showLeaderboard()">View Rankings</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game Configuration -->
+        <section id="configScreen" class="screen">
+            <nav class="main-nav">
+                <button class="back-button" onclick="returnToDashboard()">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"/>
+                    </svg>
+                    Back to Dashboard
+                </button>
+            </nav>
+            
+            <div class="config-content">
+                <div class="config-panel">
+                    <h2>Configure Your Game</h2>
+                    <p class="config-subtitle">Customize puzzle settings to match your skill level</p>
+                    
+                    <div class="config-section">
+                        <label class="config-label">Puzzle Size</label>
+                        <div class="size-selector">
+                            <button class="size-option" data-size="3">3×3<span class="size-desc">Quick</span></button>
+                            <button class="size-option active" data-size="4">4×4<span class="size-desc">Classic</span></button>
+                            <button class="size-option" data-size="5">5×5<span class="size-desc">Challenge</span></button>
+                            <button class="size-option" data-size="6">6×6<span class="size-desc">Expert</span></button>
+                        </div>
+                    </div>
+                    
+                    <div class="config-section">
+                        <label class="config-label" for="difficultySelect">Difficulty Level</label>
+                        <select id="difficultySelect" class="config-select">
+                            <option value="easy">Beginner - Fewer moves required</option>
+                            <option value="medium" selected>Intermediate - Balanced challenge</option>
+                            <option value="hard">Advanced - Complex patterns</option>
+                            <option value="expert">Expert - Maximum complexity</option>
+                        </select>
+                    </div>
+                    
+                    <div class="config-section" id="competitiveSettings">
+                        <label class="config-label" for="modeSelect">Competition Type</label>
+                        <select id="modeSelect" class="config-select">
+                            <option value="speed">Speed Solving - Fastest time wins</option>
+                            <option value="moves">Move Efficiency - Fewest moves wins</option>
+                            <option value="combo">Combined Score - Balance of both</option>
+                        </select>
+                    </div>
+                    
+                    <button class="primary-button launch-button" onclick="launchGame()">Launch Game</button>
+                </div>
+                
+                <div class="config-preview">
+                    <div class="preview-image-container">
+                        <img src="images/festive-christmas-scene-gingerbread-man-cookie-red-ornaments-pinecones-cozy-knitted-scarf-creating-warm-joyful-holiday-328396686.webp" alt="Festive holiday scene" class="preview-image">
+                    </div>
+                    <div class="preview-info">
+                        <h3>Game Tips</h3>
+                        <ul class="tips-list">
+                            <li>Plan several moves ahead</li>
+                            <li>Work on positioning corner pieces first</li>
+                            <li>Use empty space strategically</li>
+                            <li>Practice pattern recognition</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game Play Screen -->
+        <section id="gameScreen" class="screen">
+            <nav class="game-nav">
+                <button class="back-button" onclick="confirmExit()">Exit Game</button>
+                <div class="game-stats-bar">
+                    <div class="stat-display">
+                        <span class="stat-label">Time</span>
+                        <span class="stat-value" id="timerDisplay">0:00</span>
+                    </div>
+                    <div class="stat-display">
+                        <span class="stat-label">Moves</span>
+                        <span class="stat-value" id="movesDisplay">0</span>
+                    </div>
+                    <div class="stat-display">
+                        <span class="stat-label">Efficiency</span>
+                        <span class="stat-value" id="efficiencyDisplay">100%</span>
+                    </div>
+                </div>
+            </nav>
+            
+            <div class="game-container">
+                <div class="game-board-wrapper">
+                    <div id="puzzleBoard" class="puzzle-board"></div>
+                    <p class="game-instruction">Click tiles adjacent to the empty space to move them</p>
+                </div>
+                
+                <div class="game-controls">
+                    <button class="control-button" onclick="shuffleGame()">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"/>
+                        </svg>
+                        Shuffle
+                    </button>
+                    <button class="control-button" onclick="resetGame()">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clip-rule="evenodd"/>
+                        </svg>
+                        Reset
+                    </button>
+                    <button class="control-button" onclick="toggleSounds()" id="soundButton">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" id="soundIcon">
+                            <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"/>
+                        </svg>
+                        Sounds
+                    </button>
+                </div>
+                
+                <div class="requirements-panel">
+                    <h3>System Features</h3>
+                    <div class="requirements-list">
+                        <div class="requirement-item">
+                            <div class="requirement-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Social Platform</h4>
+                                <p>Secure authentication with competitive matchmaking</p>
+                            </div>
+                        </div>
+                        
+                        <div class="requirement-item">
+                            <div class="requirement-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Performance Analytics</h4>
+                                <p>Comprehensive tracking of moves, time, and efficiency</p>
+                            </div>
+                        </div>
+                        
+                        <div class="requirement-item">
+                            <div class="requirement-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Global Rankings</h4>
+                                <p>Real-time leaderboards across multiple categories</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin-top: 2rem;">Custom Undergraduate Features</h3>
+                    <div class="requirements-list">
+                        <div class="requirement-item custom-feature">
+                            <div class="requirement-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Festive Theme System</h4>
+                                <p>Dynamic themes change based on performance and time of day</p>
+                            </div>
+                        </div>
+                        
+                        <div class="requirement-item custom-feature">
+                            <div class="requirement-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Gift & Reward System</h4>
+                                <p>Unlock unique achievements and collect special holiday gifts</p>
+                            </div>
+                        </div>
+                        
+                        <div class="requirement-item custom-feature">
+                            <div class="requirement-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Holiday Magic Power-ups</h4>
+                                <p>Use special abilities: Hints, Auto-solve corners, Freeze time</p>
+                            </div>
+                        </div>
+                        
+                        <div class="requirement-item custom-feature">
+                            <div class="requirement-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>Christmas Story Mode</h4>
+                                <p>Engaging holiday narrative that unfolds as you solve puzzles</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Victory Screen -->
+        <section id="victoryScreen" class="screen">
+            <div class="victory-container">
+                <div class="victory-content">
+                    <div class="victory-icon">
+                        <svg width="120" height="120" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <h2>Puzzle Completed</h2>
+                    <p class="victory-message">Excellent work! Your solution has been recorded.</p>
+                    
+                    <div class="results-grid">
+                        <div class="result-card">
+                            <span class="result-label">Time</span>
+                            <span class="result-value" id="finalTime">-</span>
+                        </div>
+                        <div class="result-card">
+                            <span class="result-label">Moves</span>
+                            <span class="result-value" id="finalMoves">-</span>
+                        </div>
+                        <div class="result-card">
+                            <span class="result-label">Efficiency</span>
+                            <span class="result-value" id="finalEfficiency">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="victory-actions">
+                        <button class="primary-button" onclick="playAgain()">Play Again</button>
+                        <button class="secondary-button" onclick="returnToDashboard()">Dashboard</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Leaderboard Screen -->
+        <section id="leaderboardScreen" class="screen">
+            <nav class="main-nav">
+                <button class="back-button" onclick="returnToDashboard()">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"/>
+                    </svg>
+                    Back to Dashboard
+                </button>
+            </nav>
+            
+            <div class="leaderboard-content">
+                <div class="leaderboard-header">
+                    <h2>Global Rankings</h2>
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" data-category="speed">Speed</button>
+                        <button class="filter-tab" data-category="moves">Efficiency</button>
+                        <button class="filter-tab" data-category="overall">Combined</button>
+                    </div>
+                </div>
+                
+                <div class="leaderboard-table-container">
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Player</th>
+                                <th>Time</th>
+                                <th>Moves</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardBody">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- User Statistics Modal -->
+        <div id="statsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Your Statistics</h3>
+                    <button class="modal-close" onclick="closeStatsModal()">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="stats-content">
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <span class="stat-number" id="totalGames">0</span>
+                            <span class="stat-title">Games Played</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number" id="avgTime">-</span>
+                            <span class="stat-title">Average Time</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number" id="avgMoves">-</span>
+                            <span class="stat-title">Average Moves</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number" id="bestScore">-</span>
+                            <span class="stat-title">Best Score</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rewards Modal -->
+        <div id="rewardModal" class="modal">
+            <div class="modal-content reward-modal-content">
+                <div class="reward-animation">
+                    <div class="reward-icon" id="rewardIcon">🎁</div>
+                    <h2 id="rewardTitle">Achievement Unlocked!</h2>
+                    <p id="rewardDescription">You've earned a special reward!</p>
+                    <div class="reward-item" id="rewardItem"></div>
+                </div>
+                <button class="primary-button" onclick="closeRewardModal()">Collect Reward</button>
+            </div>
+        </div>
+
+        <!-- Story Mode Modal -->
+        <div id="storyModal" class="modal">
+            <div class="modal-content story-modal-content">
+                <div class="modal-header">
+                    <h3>Christmas Story</h3>
+                    <button class="modal-close" onclick="closeStoryModal()">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="story-content">
+                    <div class="story-chapter">
+                        <h4 id="storyChapterTitle">Chapter 1</h4>
+                        <p id="storyText">Loading story...</p>
+                    </div>
+                    <div class="story-progress">
+                        <span>Story Progress: <span id="storyProgress">0/10</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme Selector -->
+        <div class="theme-selector" id="themeSelector">
+            <button class="theme-toggle" onclick="toggleThemeMenu()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+                Theme
+            </button>
+            <div class="theme-menu" id="themeMenu">
+                <button class="theme-option" onclick="setTheme('aurora')">Northern Lights</button>
+                <button class="theme-option" onclick="setTheme('workshop')">Santa's Workshop</button>
+                <button class="theme-option" onclick="setTheme('icepalace')">Ice Palace</button>
+                <button class="theme-option" onclick="setTheme('candlelight')">Candlelight Christmas</button>
+            </div>
+        </div>
+
+        <!-- Power-ups Panel (shown during game) -->
+        <div class="powerups-panel" id="powerupsPanel">
+            <h4>Reindeer's Gift Power-ups</h4>
+            <div class="powerup-buttons">
+                <button class="powerup-button" onclick="usePowerup('hint')" id="hintPowerup">
+                    <span class="powerup-icon">🦌</span>
+                    <span>Reindeer Vision</span>
+                    <span class="powerup-count" id="hintCount">3</span>
+                </button>
+                <button class="powerup-button" onclick="usePowerup('corner')" id="cornerPowerup">
+                    <span class="powerup-icon">🎅</span>
+                    <span>Santa's Helper</span>
+                    <span class="powerup-count" id="cornerCount">2</span>
+                </button>
+                <button class="powerup-button" onclick="usePowerup('freeze')" id="freezePowerup">
+                    <span class="powerup-icon">❄️</span>
+                    <span>North Pole Blizzard</span>
+                    <span class="powerup-count" id="freezeCount">1</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
