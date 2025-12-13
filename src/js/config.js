@@ -1,8 +1,3 @@
-// ═══════════════════════════════════════════════════════════════════
-// CONFIGURATION
-// Game configuration and settings
-// ═══════════════════════════════════════════════════════════════════
-
 // Initialize configuration on page load
 document.addEventListener('DOMContentLoaded', () => {
     initConfig();

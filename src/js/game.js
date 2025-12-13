@@ -1,8 +1,3 @@
-// ═══════════════════════════════════════════════════════════════════
-// GAME LOGIC
-// Core puzzle game mechanics
-// ═══════════════════════════════════════════════════════════════════
-
 // Initialize game on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadGameConfig();

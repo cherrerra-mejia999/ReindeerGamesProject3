@@ -1,8 +1,3 @@
-// ═══════════════════════════════════════════════════════════════════
-// DASHBOARD
-// Main dashboard logic and statistics
-// ═══════════════════════════════════════════════════════════════════
-
 // Initialize dashboard on page load
 document.addEventListener('DOMContentLoaded', () => {
     initDashboard();

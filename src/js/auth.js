@@ -1,8 +1,3 @@
-// ═══════════════════════════════════════════════════════════════════
-// AUTHENTICATION
-// Login, register, and session management
-// ═══════════════════════════════════════════════════════════════════
-
 // Initialize authentication on page load
 document.addEventListener('DOMContentLoaded', () => {
     initAuth();

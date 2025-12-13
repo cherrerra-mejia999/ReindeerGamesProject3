@@ -1,8 +1,3 @@
-// ═══════════════════════════════════════════════════════════════════
-// CUSTOM FEATURES
-// Themes, Achievements, and Story Mode
-// ═══════════════════════════════════════════════════════════════════
-
 // Feature 1: Adaptive Arctic Atmosphere System
 const themes = {
     aurora: {
