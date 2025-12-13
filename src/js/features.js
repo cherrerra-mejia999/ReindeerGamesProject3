@@ -85,6 +85,43 @@ function loadSavedTheme() {
     }
 }
 
+// Load saved story progress on page load
+function loadStoryProgress() {
+    const savedProgress = localStorage.getItem('storyProgress');
+    if (savedProgress) {
+        state.customFeatures.storyProgress = parseInt(savedProgress);
+    }
+}
+
+// Load saved rewards on page load
+function loadRewards() {
+    const savedRewards = localStorage.getItem('rewards');
+    if (savedRewards) {
+        state.customFeatures.rewards = JSON.parse(savedRewards);
+    }
+}
+
+// Load saved power-ups on page load
+function loadPowerups() {
+    const savedPowerups = localStorage.getItem('powerups');
+    if (savedPowerups) {
+        state.customFeatures.powerups = JSON.parse(savedPowerups);
+    }
+}
+
+// Initialize features on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        loadStoryProgress();
+        loadRewards();
+        loadPowerups();
+    });
+} else {
+    loadStoryProgress();
+    loadRewards();
+    loadPowerups();
+}
+
 // Feature 2: Reindeer's Achievement Badges System
 const rewards = [
     { id: 1, name: 'Rudolph\'s First Flight', description: 'Complete your first puzzle', icon: '🦌', requirement: { type: 'games', value: 1 } },
@@ -133,6 +170,7 @@ function checkRewards() {
         
         if (earned) {
             state.customFeatures.rewards.push(reward.id);
+            localStorage.setItem('rewards', JSON.stringify(state.customFeatures.rewards));
             showReward(reward);
             rewardShown = true;
         }
@@ -164,16 +202,28 @@ function closeRewardModal() {
     const modal = document.getElementById('rewardModal');
     if (modal) modal.classList.remove('active');
     
-    // If we're on game page and just completed, show story modal next (if not already showing)
+    // Grant power-up as reward!
+    grantPowerupReward();
+    
+    // If we're on game page and just completed, show story modal next
     if (window.location.pathname.includes('game.html') && !state.game.isActive) {
-        const storyModal = document.getElementById('storyModal');
-        // Only show story if it's not already active
-        if (storyModal && !storyModal.classList.contains('active')) {
-            setTimeout(() => {
-                showStory();
-            }, 300);
-        }
+        setTimeout(() => {
+            showCurrentStoryChapter();
+        }, 400);
     }
+}
+
+function grantPowerupReward() {
+    // Each reward earned gives 1 random power-up!
+    const powerupTypes = ['hint', 'corner', 'freeze'];
+    const randomType = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
+    
+    state.customFeatures.powerups[randomType]++;
+    
+    // Save power-ups to localStorage
+    localStorage.setItem('powerups', JSON.stringify(state.customFeatures.powerups));
+    
+    console.log(`🎁 Power-up granted: ${randomType} (now have ${state.customFeatures.powerups[randomType]})`);
 }
 
 // Feature 4: Santa's Lost Delivery Route Story
@@ -232,10 +282,15 @@ const christmasStory = [
 
 function advanceStory() {
     state.customFeatures.storyProgress++;
+    localStorage.setItem('storyProgress', state.customFeatures.storyProgress);
     
-    if (state.customFeatures.storyProgress <= christmasStory.length) {
+    // Don't show modal here - let caller decide when to show it
+}
+
+function showCurrentStoryChapter() {
+    // Show the current story chapter (called explicitly)
+    if (state.customFeatures.storyProgress > 0 && state.customFeatures.storyProgress <= christmasStory.length) {
         showStory();
-        localStorage.setItem('storyProgress', state.customFeatures.storyProgress);
     }
 }
 

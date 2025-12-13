@@ -46,5 +46,19 @@
     <script src="../js/utils.js"></script>
     <script src="../js/state.js"></script>
     <script src="../js/snowfall.js"></script>
+    <script>
+        // Load and display victory results
+        document.addEventListener('DOMContentLoaded', () => {
+            const results = localStorage.getItem('lastGameResult');
+            
+            if (results) {
+                const data = JSON.parse(results);
+                
+                document.getElementById('finalTime').textContent = utils.formatTime(data.time);
+                document.getElementById('finalMoves').textContent = data.moves;
+                document.getElementById('finalEfficiency').textContent = data.efficiency + '%';
+            }
+        });
+    </script>
 </body>
 </html>

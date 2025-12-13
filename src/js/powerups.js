@@ -35,6 +35,7 @@ function usePowerup(type) {
     }
     
     state.customFeatures.powerups[type]--;
+    localStorage.setItem('powerups', JSON.stringify(state.customFeatures.powerups));
     updatePowerupCounts();
 }
 

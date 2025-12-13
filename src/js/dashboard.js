@@ -59,6 +59,15 @@ function loadUserStats() {
     }
 }
 
+function handleLogout() {
+    if (confirm('Are you sure you want to sign out?')) {
+        localStorage.removeItem('user');
+        state.user = null;
+        state.reset();
+        window.location.href = '../index.html';
+    }
+}
+
 // Close modals when clicking outside
 document.addEventListener('click', (e) => {
     const statsModal = document.getElementById('statsModal');

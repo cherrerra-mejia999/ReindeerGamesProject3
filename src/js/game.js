@@ -17,12 +17,19 @@ function loadGameConfig() {
 function initializeGame() {
     state.reset();
     
-    // Reset power-ups for new game
-    state.customFeatures.powerups = {
-        hint: 3,
-        corner: 2,
-        freeze: 1
-    };
+    // Load saved power-ups (DON'T reset them!)
+    const savedPowerups = localStorage.getItem('powerups');
+    if (savedPowerups) {
+        state.customFeatures.powerups = JSON.parse(savedPowerups);
+    } else {
+        // Only use defaults if no saved power-ups exist (first time)
+        state.customFeatures.powerups = {
+            hint: 3,
+            corner: 2,
+            freeze: 1
+        };
+        localStorage.setItem('powerups', JSON.stringify(state.customFeatures.powerups));
+    }
     updatePowerupCounts();
     
     const board = document.getElementById('puzzleBoard');
@@ -293,18 +300,18 @@ function handleVictory() {
 }
 
 function showVictorySequence() {
+    // Increment story counter (but don't show modal yet)
+    advanceStory();
+    
     // Check if there are any rewards to show
     const hasRewards = checkRewards(); // Returns true if rewards were earned
     
-    // Progress the story
-    advanceStory();
-    
-    // If no rewards, story modal is already showing
-    // Story modal close will redirect to victory page
-    
-    // If rewards exist, reward modal will show first
-    // When reward closes, it will show story
-    // When story closes, it will redirect to victory
+    if (!hasRewards) {
+        // No reward earned, show story immediately
+        showCurrentStoryChapter();
+    }
+    // If reward earned, reward modal is already showing
+    // Story will show when reward modal closes
 }
 
 function saveGameResult() {

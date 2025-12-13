@@ -1,387 +1,394 @@
 <?php
-/**
- * API Endpoints
- * Reindeer Games - Fifteen Puzzle
- * 
- * IMPORTANT: This file must be accessed via command-line or direct database connections
- * GUI tools like phpMyAdmin are NOT allowed per project requirements
- */
+
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
 
 require_once 'config.php';
 
-// Set JSON header
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+// Get request data
+$input = json_decode(file_get_contents('php://input'), true);
+$action = $_GET['action'] ?? $input['action'] ?? '';
 
-// Handle OPTIONS preflight request
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
+// Response helper
+function sendResponse($success, $data = null, $message = '') {
+    echo json_encode([
+        'success' => $success,
+        'data' => $data,
+        'message' => $message
+    ]);
     exit;
 }
 
-// Initialize secure session
-Security::initSecureSession();
-
-// Get request method and endpoint
-$method = $_SERVER['REQUEST_METHOD'];
-$request_uri = $_SERVER['REQUEST_URI'];
-$endpoint = explode('?', $request_uri)[0];
-$endpoint = str_replace('/api/', '', $endpoint);
-
-// Get JSON input
-$input = json_decode(file_get_contents('php://input'), true);
-
+// Database connection
 try {
-    $db = Database::getInstance()->getConnection();
-    
-    // Route requests
-    switch ($endpoint) {
-        case 'register':
-            if ($method !== 'POST') {
-                ApiResponse::error('Method not allowed', 405);
-            }
-            handleRegister($db, $input);
-            break;
-            
-        case 'login':
-            if ($method !== 'POST') {
-                ApiResponse::error('Method not allowed', 405);
-            }
-            handleLogin($db, $input);
-            break;
-            
-        case 'logout':
-            if ($method !== 'POST') {
-                ApiResponse::error('Method not allowed', 405);
-            }
-            handleLogout();
-            break;
-            
-        case 'save-game':
-            if ($method !== 'POST') {
-                ApiResponse::error('Method not allowed', 405);
-            }
-            handleSaveGame($db, $input);
-            break;
-            
-        case 'get-leaderboard':
-            if ($method !== 'GET') {
-                ApiResponse::error('Method not allowed', 405);
-            }
-            handleGetLeaderboard($db);
-            break;
-            
-        case 'get-user-stats':
-            if ($method !== 'GET') {
-                ApiResponse::error('Method not allowed', 405);
-            }
-            handleGetUserStats($db);
-            break;
-            
-        case 'save-analytics':
-            if ($method !== 'POST') {
-                ApiResponse::error('Method not allowed', 405);
-            }
-            handleSaveAnalytics($db, $input);
-            break;
-            
-        default:
-            ApiResponse::notFound('Endpoint not found');
-    }
-    
-} catch (Exception $e) {
-    error_log("API Error: " . $e->getMessage());
-    ApiResponse::error('Server error occurred');
+    $pdo = new PDO(
+        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+        DB_USER,
+        DB_PASS,
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+    );
+} catch(PDOException $e) {
+    sendResponse(false, null, 'Database connection failed: ' . $e->getMessage());
 }
 
-/**
- * User Registration
- */
-function handleRegister($db, $input) {
-    // Validate input
-    if (empty($input['username']) || empty($input['email']) || empty($input['password'])) {
-        ApiResponse::error('All fields are required');
+// USER MANAGEMENT
+
+if ($action === 'register') {
+    $username = $input['username'] ?? '';
+    $email = $input['email'] ?? '';
+    $password = $input['password'] ?? '';
+    
+    if (empty($username) || empty($email) || empty($password)) {
+        sendResponse(false, null, 'All fields are required');
     }
     
-    $username = Security::sanitizeInput($input['username']);
-    $email = Security::sanitizeInput($input['email']);
-    $password = $input['password'];
-    
-    // Validate email
-    if (!Security::validateEmail($email)) {
-        ApiResponse::error('Invalid email address');
+    // Check if username exists
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
+    $stmt->execute([$username]);
+    if ($stmt->fetchColumn() > 0) {
+        sendResponse(false, null, 'Username already exists');
     }
     
-    // Validate username length
-    if (strlen($username) < 3 || strlen($username) > 50) {
-        ApiResponse::error('Username must be between 3 and 50 characters');
+    // Check if email exists
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
+    $stmt->execute([$email]);
+    if ($stmt->fetchColumn() > 0) {
+        sendResponse(false, null, 'Email already exists');
     }
     
-    // Validate password strength
-    if (strlen($password) < 6) {
-        ApiResponse::error('Password must be at least 6 characters');
+    // Create user
+    $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+    $stmt = $pdo->prepare("
+        INSERT INTO users (username, email, password_hash, created_at, last_login)
+        VALUES (?, ?, ?, NOW(), NOW())
+    ");
+    $stmt->execute([$username, $email, $passwordHash]);
+    $userId = $pdo->lastInsertId();
+    
+    // Create user profile
+    $stmt = $pdo->prepare("
+        INSERT INTO user_profiles (
+            user_id, total_games, total_wins, total_time_seconds, total_moves,
+            best_time_seconds, best_moves, avg_efficiency, current_theme,
+            story_progress, powerup_hint, powerup_corner, powerup_freeze
+        ) VALUES (?, 0, 0, 0, 0, NULL, NULL, 0, 'aurora', 0, 3, 2, 1)
+    ");
+    $stmt->execute([$userId]);
+    
+    sendResponse(true, [
+        'user_id' => $userId,
+        'username' => $username,
+        'email' => $email
+    ], 'Account created successfully');
+}
+
+if ($action === 'login') {
+    $username = $input['username'] ?? '';
+    $password = $input['password'] ?? '';
+    
+    if (empty($username) || empty($password)) {
+        sendResponse(false, null, 'Username and password required');
     }
     
-    try {
-        // Check if username or email already exists
-        $stmt = $db->prepare("SELECT user_id FROM users WHERE username = ? OR email = ?");
-        $stmt->execute([$username, $email]);
-        
-        if ($stmt->fetch()) {
-            ApiResponse::error('Username or email already exists');
-        }
-        
-        // Hash password
-        $password_hash = Security::hashPassword($password);
-        
-        // Insert user
-        $stmt = $db->prepare("
-            INSERT INTO users (username, email, password_hash) 
-            VALUES (?, ?, ?)
+    // Get user
+    $stmt = $pdo->prepare("
+        SELECT user_id, username, email, password_hash 
+        FROM users 
+        WHERE username = ? OR email = ?
+    ");
+    $stmt->execute([$username, $username]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$user || !password_verify($password, $user['password_hash'])) {
+        sendResponse(false, null, 'Invalid credentials');
+    }
+    
+    // Update last login
+    $stmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE user_id = ?");
+    $stmt->execute([$user['user_id']]);
+    
+    unset($user['password_hash']);
+    sendResponse(true, $user, 'Login successful');
+}
+
+if ($action === 'getUserProfile') {
+    $userId = $input['user_id'] ?? 0;
+    
+    $stmt = $pdo->prepare("
+        SELECT 
+            u.user_id, u.username, u.email, u.created_at, u.last_login,
+            up.total_games, up.total_wins, up.total_time_seconds, up.total_moves,
+            up.best_time_seconds, up.best_moves, up.avg_efficiency,
+            up.current_theme, up.story_progress,
+            up.powerup_hint, up.powerup_corner, up.powerup_freeze
+        FROM users u
+        LEFT JOIN user_profiles up ON u.user_id = up.user_id
+        WHERE u.user_id = ?
+    ");
+    $stmt->execute([$userId]);
+    $profile = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($profile) {
+        sendResponse(true, $profile);
+    } else {
+        sendResponse(false, null, 'User not found');
+    }
+}
+
+
+// GAME SESSION MANAGEMENT
+
+if ($action === 'startGame') {
+    $userId = $input['user_id'] ?? 0;
+    $puzzleSize = $input['puzzle_size'] ?? 4;
+    $difficulty = $input['difficulty'] ?? 'medium';
+    $mode = $input['mode'] ?? 'competitive';
+    $competitiveMode = $input['competitive_mode'] ?? 'speed';
+    $puzzleType = $input['puzzle_type'] ?? 'numbers';
+    $customImage = $input['custom_image_url'] ?? null;
+    
+    $stmt = $pdo->prepare("
+        INSERT INTO game_sessions (
+            user_id, puzzle_size, difficulty, mode, competitive_mode,
+            start_time, puzzle_type, custom_image_url
+        ) VALUES (?, ?, ?, ?, ?, NOW(), ?, ?)
+    ");
+    $stmt->execute([$userId, $puzzleSize, $difficulty, $mode, $competitiveMode, $puzzleType, $customImage]);
+    
+    sendResponse(true, ['session_id' => $pdo->lastInsertId()], 'Game started');
+}
+
+if ($action === 'endGame') {
+    $sessionId = $input['session_id'] ?? 0;
+    $userId = $input['user_id'] ?? 0;
+    $completed = $input['completed'] ?? false;
+    $time = $input['time'] ?? 0;
+    $moves = $input['moves'] ?? 0;
+    $efficiency = $input['efficiency'] ?? 0;
+    
+    if ($completed) {
+        // Update session
+        $stmt = $pdo->prepare("
+            UPDATE game_sessions 
+            SET end_time = NOW(), completion_time_seconds = ?,
+                total_moves = ?, efficiency_score = ?, completed = 1
+            WHERE session_id = ?
         ");
-        $stmt->execute([$username, $email, $password_hash]);
+        $stmt->execute([$time, $moves, $efficiency, $sessionId]);
         
-        $user_id = $db->lastInsertId();
-        
-        // Create user profile
-        $stmt = $db->prepare("
-            INSERT INTO user_profiles (user_id, display_name) 
-            VALUES (?, ?)
+        // Update user profile
+        $stmt = $pdo->prepare("
+            UPDATE user_profiles 
+            SET total_games = total_games + 1,
+                total_wins = total_wins + 1,
+                total_time_seconds = total_time_seconds + ?,
+                total_moves = total_moves + ?,
+                best_time_seconds = CASE 
+                    WHEN best_time_seconds IS NULL OR ? < best_time_seconds 
+                    THEN ? ELSE best_time_seconds END,
+                best_moves = CASE 
+                    WHEN best_moves IS NULL OR ? < best_moves 
+                    THEN ? ELSE best_moves END,
+                avg_efficiency = ((avg_efficiency * (total_games - 1)) + ?) / total_games
+            WHERE user_id = ?
         ");
-        $stmt->execute([$user_id, $username]);
+        $stmt->execute([$time, $moves, $time, $time, $moves, $moves, $efficiency, $userId]);
         
-        // Set session
-        $_SESSION['user_id'] = $user_id;
-        $_SESSION['username'] = $username;
-        
-        ApiResponse::success([
-            'user_id' => $user_id,
-            'username' => $username,
-            'email' => $email
-        ], 'Registration successful');
-        
-    } catch (PDOException $e) {
-        error_log("Registration error: " . $e->getMessage());
-        ApiResponse::error('Registration failed');
+        sendResponse(true, null, 'Game completed');
+    } else {
+        $stmt = $pdo->prepare("UPDATE game_sessions SET end_time = NOW(), completed = 0 WHERE session_id = ?");
+        $stmt->execute([$sessionId]);
+        sendResponse(true, null, 'Game ended');
     }
 }
 
-/**
- * User Login
- */
-function handleLogin($db, $input) {
-    // Validate input
-    if (empty($input['username']) || empty($input['password'])) {
-        ApiResponse::error('Username and password are required');
-    }
+
+// LEADERBOARD
+
+if ($action === 'recordLeaderboard') {
+    $userId = $input['user_id'] ?? 0;
+    $sessionId = $input['session_id'] ?? 0;
+    $puzzleSize = $input['puzzle_size'] ?? 4;
+    $difficulty = $input['difficulty'] ?? 'medium';
+    $time = $input['time'] ?? 0;
+    $moves = $input['moves'] ?? 0;
+    $efficiency = $input['efficiency'] ?? 0;
+    $category = $input['category'] ?? 'overall';
+    $score = $input['score'] ?? 0;
     
-    $username = Security::sanitizeInput($input['username']);
-    $password = $input['password'];
+    $stmt = $pdo->prepare("
+        INSERT INTO leaderboards (
+            user_id, session_id, puzzle_size, difficulty,
+            completion_time_seconds, total_moves, efficiency_score,
+            category, score, recorded_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    ");
+    $stmt->execute([$userId, $sessionId, $puzzleSize, $difficulty, $time, $moves, $efficiency, $category, $score]);
     
-    try {
-        // Get user
-        $stmt = $db->prepare("
-            SELECT user_id, username, email, password_hash, is_active 
-            FROM users 
-            WHERE username = ? OR email = ?
-        ");
-        $stmt->execute([$username, $username]);
-        $user = $stmt->fetch();
-        
-        if (!$user) {
-            ApiResponse::error('Invalid credentials');
-        }
-        
-        if (!$user['is_active']) {
-            ApiResponse::error('Account is disabled');
-        }
-        
-        // Verify password
-        if (!Security::verifyPassword($password, $user['password_hash'])) {
-            ApiResponse::error('Invalid credentials');
-        }
-        
-        // Update last login
-        $stmt = $db->prepare("UPDATE users SET last_login = NOW() WHERE user_id = ?");
-        $stmt->execute([$user['user_id']]);
-        
-        // Set session
-        $_SESSION['user_id'] = $user['user_id'];
-        $_SESSION['username'] = $user['username'];
-        
-        ApiResponse::success([
-            'user_id' => $user['user_id'],
-            'username' => $user['username'],
-            'email' => $user['email']
-        ], 'Login successful');
-        
-    } catch (PDOException $e) {
-        error_log("Login error: " . $e->getMessage());
-        ApiResponse::error('Login failed');
-    }
+    sendResponse(true, null, 'Leaderboard recorded');
 }
 
-/**
- * User Logout
- */
-function handleLogout() {
-    session_unset();
-    session_destroy();
-    ApiResponse::success(null, 'Logout successful');
+if ($action === 'getLeaderboard') {
+    $category = $input['category'] ?? 'overall';
+    $puzzleSize = $input['puzzle_size'] ?? 4;
+    $difficulty = $input['difficulty'] ?? 'medium';
+    $limit = $input['limit'] ?? 10;
+    
+    $orderBy = $category === 'speed' ? 'l.completion_time_seconds ASC' :
+               ($category === 'moves' ? 'l.total_moves ASC' : 'l.score DESC');
+    
+    $stmt = $pdo->prepare("
+        SELECT 
+            l.rank_position, u.username, l.completion_time_seconds,
+            l.total_moves, l.efficiency_score, l.score, l.recorded_at
+        FROM leaderboards l
+        JOIN users u ON l.user_id = u.user_id
+        WHERE l.category = ? AND l.puzzle_size = ? AND l.difficulty = ?
+        ORDER BY $orderBy
+        LIMIT ?
+    ");
+    $stmt->execute([$category, $puzzleSize, $difficulty, $limit]);
+    $leaderboard = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    sendResponse(true, $leaderboard);
 }
 
-/**
- * Save Game Session
- */
-function handleSaveGame($db, $input) {
-    // Check authentication
-    if (!isset($_SESSION['user_id'])) {
-        ApiResponse::unauthorized('Please login first');
-    }
+// USER PROFILE UPDATES
+
+if ($action === 'updateTheme') {
+    $userId = $input['user_id'] ?? 0;
+    $theme = $input['theme'] ?? 'aurora';
     
-    $user_id = $_SESSION['user_id'];
+    $stmt = $pdo->prepare("UPDATE user_profiles SET current_theme = ? WHERE user_id = ?");
+    $stmt->execute([$theme, $userId]);
     
-    // Validate input
-    if (empty($input['puzzle_size']) || empty($input['difficulty']) || 
-        empty($input['mode']) || !isset($input['total_moves']) || 
-        !isset($input['time_seconds'])) {
-        ApiResponse::error('Missing required fields');
-    }
-    
-    try {
-        // Use stored procedure to save game
-        $stmt = $db->prepare("
-            CALL sp_save_game_session(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-        
-        $puzzle_id = $input['puzzle_id'] ?? 1;
-        $board_state = json_encode($input['board_state'] ?? []);
-        $move_history = json_encode($input['move_history'] ?? []);
-        
-        $stmt->execute([
-            $user_id,
-            $puzzle_id,
-            $input['mode'],
-            $input['competitive_mode'] ?? null,
-            $input['puzzle_size'],
-            $input['difficulty'],
-            $input['total_moves'],
-            $input['time_seconds'],
-            $board_state,
-            $move_history
-        ]);
-        
-        $result = $stmt->fetch();
-        
-        ApiResponse::success($result, 'Game saved successfully');
-        
-    } catch (PDOException $e) {
-        error_log("Save game error: " . $e->getMessage());
-        ApiResponse::error('Failed to save game');
-    }
+    sendResponse(true, null, 'Theme updated');
 }
 
-/**
- * Get Leaderboard
- */
-function handleGetLeaderboard($db) {
-    $game_mode = $_GET['mode'] ?? 'speed';
-    $puzzle_size = $_GET['size'] ?? 4;
-    $difficulty = $_GET['difficulty'] ?? 'medium';
-    $limit = $_GET['limit'] ?? 50;
+if ($action === 'updateStoryProgress') {
+    $userId = $input['user_id'] ?? 0;
     
-    try {
-        $stmt = $db->prepare("
-            CALL sp_get_leaderboard(?, ?, ?, ?)
-        ");
-        $stmt->execute([$game_mode, $puzzle_size, $difficulty, $limit]);
-        
-        $leaderboard = $stmt->fetchAll();
-        
-        ApiResponse::success($leaderboard, 'Leaderboard retrieved successfully');
-        
-    } catch (PDOException $e) {
-        error_log("Leaderboard error: " . $e->getMessage());
-        ApiResponse::error('Failed to retrieve leaderboard');
-    }
+    $stmt = $pdo->prepare("UPDATE user_profiles SET story_progress = story_progress + 1 WHERE user_id = ? AND story_progress < 10");
+    $stmt->execute([$userId]);
+    
+    sendResponse(true, null, 'Story progress updated');
 }
 
-/**
- * Get User Statistics
- */
-function handleGetUserStats($db) {
-    // Check authentication
-    if (!isset($_SESSION['user_id'])) {
-        ApiResponse::unauthorized('Please login first');
-    }
+if ($action === 'updatePowerups') {
+    $userId = $input['user_id'] ?? 0;
+    $hint = $input['hint'] ?? 0;
+    $corner = $input['corner'] ?? 0;
+    $freeze = $input['freeze'] ?? 0;
     
-    $user_id = $_SESSION['user_id'];
+    $stmt = $pdo->prepare("
+        UPDATE user_profiles 
+        SET powerup_hint = ?, powerup_corner = ?, powerup_freeze = ?
+        WHERE user_id = ?
+    ");
+    $stmt->execute([$hint, $corner, $freeze, $userId]);
     
-    try {
-        $stmt = $db->prepare("CALL sp_get_user_stats(?)");
-        $stmt->execute([$user_id]);
-        
-        $stats = $stmt->fetch();
-        $stmt->nextRowset(); // Move to achievements
-        $achievements = $stmt->fetchAll();
-        
-        ApiResponse::success([
-            'statistics' => $stats,
-            'achievements' => $achievements
-        ], 'Statistics retrieved successfully');
-        
-    } catch (PDOException $e) {
-        error_log("Stats error: " . $e->getMessage());
-        ApiResponse::error('Failed to retrieve statistics');
-    }
+    sendResponse(true, null, 'Powerups updated');
 }
 
-/**
- * Save Analytics Event
- */
-function handleSaveAnalytics($db, $input) {
-    // Check authentication
-    if (!isset($_SESSION['user_id'])) {
-        ApiResponse::unauthorized('Please login first');
-    }
+if ($action === 'grantPowerup') {
+    $userId = $input['user_id'] ?? 0;
+    $type = $input['type'] ?? 'hint';
     
-    $user_id = $_SESSION['user_id'];
+    $column = 'powerup_' . $type;
+    $stmt = $pdo->prepare("UPDATE user_profiles SET $column = $column + 1 WHERE user_id = ?");
+    $stmt->execute([$userId]);
     
-    // Validate input
-    if (empty($input['event_type'])) {
-        ApiResponse::error('Event type is required');
-    }
-    
-    try {
-        $stmt = $db->prepare("
-            INSERT INTO game_analytics 
-            (user_id, session_id, event_type, puzzle_size, difficulty, 
-             current_moves, current_time, device_type, browser, metadata)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-        
-        $metadata = json_encode($input['metadata'] ?? []);
-        
-        $stmt->execute([
-            $user_id,
-            $input['session_id'] ?? null,
-            $input['event_type'],
-            $input['puzzle_size'] ?? null,
-            $input['difficulty'] ?? null,
-            $input['current_moves'] ?? null,
-            $input['current_time'] ?? null,
-            $input['device_type'] ?? null,
-            $input['browser'] ?? null,
-            $metadata
-        ]);
-        
-        ApiResponse::success(null, 'Analytics saved successfully');
-        
-    } catch (PDOException $e) {
-        error_log("Analytics error: " . $e->getMessage());
-        ApiResponse::error('Failed to save analytics');
-    }
+    sendResponse(true, null, 'Powerup granted');
 }
+
+// ACHIEVEMENTS
+
+
+if ($action === 'getAchievements') {
+    $userId = $input['user_id'] ?? 0;
+    
+    $stmt = $pdo->prepare("
+        SELECT achievement_id, achievement_type, earned_at
+        FROM achievements
+        WHERE user_id = ?
+        ORDER BY earned_at DESC
+    ");
+    $stmt->execute([$userId]);
+    $achievements = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    sendResponse(true, $achievements);
+}
+
+if ($action === 'recordAchievement') {
+    $userId = $input['user_id'] ?? 0;
+    $type = $input['achievement_type'] ?? '';
+    
+    // Check if already earned
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM achievements WHERE user_id = ? AND achievement_type = ?");
+    $stmt->execute([$userId, $type]);
+    if ($stmt->fetchColumn() > 0) {
+        sendResponse(false, null, 'Achievement already earned');
+    }
+    
+    $stmt = $pdo->prepare("INSERT INTO achievements (user_id, achievement_type, earned_at) VALUES (?, ?, NOW())");
+    $stmt->execute([$userId, $type]);
+    
+    sendResponse(true, null, 'Achievement recorded');
+}
+
+// ANALYTICS
+
+if ($action === 'recordAnalytics') {
+    $sessionId = $input['session_id'] ?? 0;
+    $userId = $input['user_id'] ?? 0;
+    $puzzleSize = $input['puzzle_size'] ?? 4;
+    $difficulty = $input['difficulty'] ?? 'medium';
+    $time = $input['time'] ?? 0;
+    $moves = $input['moves'] ?? 0;
+    $efficiency = $input['efficiency'] ?? 0;
+    $powerupsUsed = $input['powerups_used'] ?? 0;
+    $theme = $input['theme'] ?? 'aurora';
+    
+    $stmt = $pdo->prepare("
+        INSERT INTO game_analytics (
+            session_id, user_id, puzzle_size, difficulty,
+            completion_time_seconds, total_moves, efficiency_score,
+            powerups_used, theme_used, recorded_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    ");
+    $stmt->execute([$sessionId, $userId, $puzzleSize, $difficulty, $time, $moves, $efficiency, $powerupsUsed, $theme]);
+    
+    sendResponse(true, null, 'Analytics recorded');
+}
+
+if ($action === 'getUserStats') {
+    $userId = $input['user_id'] ?? 0;
+    
+    $stmt = $pdo->prepare("
+        SELECT 
+            up.total_games, up.total_wins,
+            ROUND(up.total_time_seconds / 60, 2) as total_hours,
+            up.total_moves, up.best_time_seconds, up.best_moves,
+            ROUND(up.avg_efficiency, 2) as avg_efficiency,
+            up.story_progress,
+            COUNT(DISTINCT a.achievement_id) as total_achievements
+        FROM user_profiles up
+        LEFT JOIN achievements a ON up.user_id = a.user_id
+        WHERE up.user_id = ?
+        GROUP BY up.user_id
+    ");
+    $stmt->execute([$userId]);
+    $stats = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    sendResponse(true, $stats);
+}
+
+// Unknown action
+sendResponse(false, null, 'Unknown action: ' . $action);
 ?>
