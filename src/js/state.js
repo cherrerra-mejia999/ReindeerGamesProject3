@@ -17,7 +17,8 @@ class GameState {
             timer: null,
             isActive: false,
             soundEnabled: true,
-            optimalMoves: 0
+            optimalMoves: 0,
+            sessionId: null
         };
         this.stats = {
             totalGames: 0,
@@ -50,7 +51,8 @@ class GameState {
             timer: null,
             isActive: false,
             soundEnabled: this.game.soundEnabled,
-            optimalMoves: 0
+            optimalMoves: 0,
+            sessionId: null
         };
     }
 }

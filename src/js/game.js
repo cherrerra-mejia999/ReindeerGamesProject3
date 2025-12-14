@@ -13,6 +13,25 @@ function loadGameConfig() {
     }
 }
 
+// Start a game session if user is logged in
+async function startGameSessionIfLoggedIn() {
+    // Load user from localStorage
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        state.user = JSON.parse(savedUser);
+        
+        try {
+            const result = await startGameSession(state.user.id, state.config);
+            if (result.success && result.data) {
+                state.game.sessionId = result.data.session_id;
+                console.log('Game session started:', state.game.sessionId);
+            }
+        } catch (error) {
+            console.error('Error starting game session:', error);
+        }
+    }
+}
+
 // Game Initialization
 function initializeGame() {
     state.reset();
@@ -40,6 +59,8 @@ function initializeGame() {
     
     setTimeout(() => {
         shuffleBoard();
+        // Start game session when game begins
+        startGameSessionIfLoggedIn();
     }, 500);
 }
 
@@ -314,7 +335,8 @@ function showVictorySequence() {
     // Story will show when reward modal closes
 }
 
-function saveGameResult() {
+async function saveGameResult() {
+    const efficiency = utils.calculateEfficiency(state.game.moves, state.game.optimalMoves);
     const result = {
         userId: state.user?.id,
         size: state.config.size,
@@ -322,8 +344,9 @@ function saveGameResult() {
         mode: state.config.mode,
         time: state.game.time,
         moves: state.game.moves,
-        efficiency: utils.calculateEfficiency(state.game.moves, state.game.optimalMoves),
-        timestamp: new Date().toISOString()
+        efficiency: efficiency,
+        timestamp: new Date().toISOString(),
+        completed: true
     };
     
     // Update local stats
@@ -336,6 +359,36 @@ function saveGameResult() {
     localStorage.setItem('userStats', JSON.stringify(state.stats));
     
     console.log('Game result saved:', result);
+    
+    // Save to database if user is logged in
+    if (state.user && state.game.sessionId) {
+        try {
+            // End game session
+            const endResult = await endGameSession(state.game.sessionId, state.user.id, {
+                completed: true,
+                time: state.game.time,
+                moves: state.game.moves,
+                efficiency: efficiency
+            });
+            console.log('Game session ended:', endResult);
+            
+            // Record leaderboard entry if in competitive mode
+            if (state.config.mode === 'competitive') {
+                const leaderboardResult = await recordLeaderboardEntry(
+                    state.user.id,
+                    state.game.sessionId,
+                    {
+                        time: state.game.time,
+                        moves: state.game.moves,
+                        efficiency: efficiency
+                    }
+                );
+                console.log('Leaderboard entry recorded:', leaderboardResult);
+            }
+        } catch (error) {
+            console.error('Error saving game to database:', error);
+        }
+    }
 }
 
 // Keyboard Controls
