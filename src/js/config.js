@@ -104,7 +104,7 @@ function loadImageGallery() {
             name: 'Marshmallow Snowman'
         },
         {
-            src: '../images/Coffee.jpg',
+            src: '../images/coffee.jpg',
             name: 'Cozy Coffee'
         }
     ];
