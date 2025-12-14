@@ -40,8 +40,11 @@ async function handleLogin(e) {
     const result = await loginUser(username, password);
     
     if (result.success) {
+        // Ensure user object has 'id' field for compatibility
+        result.data.id = result.data.user_id;
+        
         state.user = result.data;
-        localStorage.setItem('user', JSON.stringify(result.data));
+        localStorage.setItem('currentUser', JSON.stringify(result.data));
         
         // Load user profile (powerups, story progress, theme)
         const profile = await getUserProfile(result.data.user_id);
@@ -81,7 +84,10 @@ async function handleRegister(e) {
     const result = await registerUser(username, email, password);
     
     if (result.success) {
-        localStorage.setItem('user', JSON.stringify(result.data));
+        // Ensure user object has 'id' field for compatibility
+        result.data.id = result.data.user_id;
+        
+        localStorage.setItem('currentUser', JSON.stringify(result.data));
         
         // Load user profile (gets initial powerups and story progress)
         const profile = await getUserProfile(result.data.user_id);

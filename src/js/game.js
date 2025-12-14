@@ -17,18 +17,29 @@ function loadGameConfig() {
 async function startGameSessionIfLoggedIn() {
     // Load user from localStorage
     const savedUser = localStorage.getItem('currentUser');
+    console.log('Checking for logged in user:', savedUser ? 'User found in localStorage' : 'No user found');
+    
     if (savedUser) {
         state.user = JSON.parse(savedUser);
+        console.log('User loaded:', state.user);
+        console.log('Game config:', state.config);
         
         try {
             const result = await startGameSession(state.user.id, state.config);
+            console.log('API Response from startGameSession:', result);
+            
             if (result.success && result.data) {
                 state.game.sessionId = result.data.session_id;
-                console.log('Game session started:', state.game.sessionId);
+                console.log('Game session started successfully! Session ID:', state.game.sessionId);
+            } else {
+                console.error('Failed to start game session:', result.message || 'Unknown error');
             }
         } catch (error) {
-            console.error('Error starting game session:', error);
+            console.error('Exception starting game session:', error);
         }
+    } else {
+        console.log('No user logged in - game will not be saved to database');
+        console.log('Tip: Login or register to save your scores!');
     }
 }
 
@@ -358,35 +369,78 @@ async function saveGameResult() {
     // Save to localStorage
     localStorage.setItem('userStats', JSON.stringify(state.stats));
     
-    console.log('Game result saved:', result);
+    console.log('Local stats updated:', state.stats);
+    console.log('Current user:', state.user);
+    console.log('Session ID:', state.game.sessionId);
     
     // Save to database if user is logged in
     if (state.user && state.game.sessionId) {
+        console.log('Saving game to database...');
         try {
             // End game session
+            console.log('Ending game session...');
             const endResult = await endGameSession(state.game.sessionId, state.user.id, {
                 completed: true,
                 time: state.game.time,
                 moves: state.game.moves,
                 efficiency: efficiency
             });
-            console.log('Game session ended:', endResult);
+            console.log('Game session ended successfully:', endResult);
             
             // Record leaderboard entry if in competitive mode
             if (state.config.mode === 'competitive') {
-                const leaderboardResult = await recordLeaderboardEntry(
+                console.log('Recording leaderboard entries for all categories...');
+                
+                // Record entry for the specific competitive mode (speed/moves)
+                const mainCategory = state.config.competitiveMode || 'speed';
+                await recordLeaderboardEntry(
                     state.user.id,
                     state.game.sessionId,
                     {
                         time: state.game.time,
                         moves: state.game.moves,
                         efficiency: efficiency
-                    }
+                    },
+                    mainCategory
                 );
-                console.log('Leaderboard entry recorded:', leaderboardResult);
+                console.log(`Leaderboard entry recorded for ${mainCategory}`);
+                
+                // Also record for efficiency category
+                await recordLeaderboardEntry(
+                    state.user.id,
+                    state.game.sessionId,
+                    {
+                        time: state.game.time,
+                        moves: state.game.moves,
+                        efficiency: efficiency
+                    },
+                    'efficiency'
+                );
+                console.log('Leaderboard entry recorded for efficiency');
+                
+                // Also record for combined category
+                await recordLeaderboardEntry(
+                    state.user.id,
+                    state.game.sessionId,
+                    {
+                        time: state.game.time,
+                        moves: state.game.moves,
+                        efficiency: efficiency
+                    },
+                    'combined'
+                );
+                console.log('Leaderboard entry recorded for combined');
             }
         } catch (error) {
             console.error('Error saving game to database:', error);
+        }
+    } else {
+        if (!state.user) {
+            console.warn('Cannot save to database: No user logged in');
+            console.log('Register or login to save your progress!');
+        } else if (!state.game.sessionId) {
+            console.error('Cannot save to database: No session ID');
+            console.log('Session may have failed to start. Check API connection.');
         }
     }
 }

@@ -80,8 +80,8 @@ async function endGameSession(sessionId, userId, result) {
 
 // LEADERBOARD
 
-async function recordLeaderboardEntry(userId, sessionId, result) {
-    const score = calculateScore(result.time, result.moves, result.efficiency);
+async function recordLeaderboardEntry(userId, sessionId, result, category = null) {
+    const score = calculateScore(result.time, result.moves, result.efficiency, category);
     
     return await apiCall('recordLeaderboard', {
         user_id: userId,
@@ -91,7 +91,7 @@ async function recordLeaderboardEntry(userId, sessionId, result) {
         time: result.time,
         moves: result.moves,
         efficiency: result.efficiency,
-        category: state.config.competitiveMode || 'overall',
+        category: category || state.config.competitiveMode || 'overall',
         score: score
     });
 }
@@ -105,10 +105,23 @@ async function getLeaderboard(category, puzzleSize = 4, difficulty = 'medium', l
     });
 }
 
-function calculateScore(time, moves, efficiency) {
+function calculateScore(time, moves, efficiency, category = 'combined') {
     // Score formula: Higher is better
-    // Base score on efficiency, penalize time and moves
-    return Math.round((efficiency * 100) - (time * 0.5) - (moves * 2));
+    // Different scoring based on category
+    
+    if (category === 'speed') {
+        // For speed: lower time is better, convert to score where higher is better
+        return Math.max(1000 - time, 0);
+    } else if (category === 'moves') {
+        // For moves: fewer moves is better, convert to score where higher is better
+        return Math.max(500 - moves, 0);
+    } else if (category === 'efficiency') {
+        // For efficiency: higher efficiency is better (0-100%)
+        return Math.round(efficiency * 10); // Scale to 0-1000
+    } else {
+        // Combined: balance all three factors
+        return Math.round((efficiency * 100) - (time * 0.5) - (moves * 2));
+    }
 }
 
 
