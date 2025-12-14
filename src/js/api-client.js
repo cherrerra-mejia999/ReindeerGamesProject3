@@ -1,5 +1,3 @@
-// Use absolute path - works from any page
-// UPDATE THIS if your folder name is different!
 const API_URL = '/~cherreramejia2/reindeer-games/php/api.php';
 
 console.log('API URL:', API_URL); // Debug: see what path is being used

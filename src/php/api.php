@@ -28,9 +28,9 @@ function sendResponse($success, $data = null, $message = '') {
 // Database connection
 try {
     $pdo = new PDO(
-        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
-        DB_USER,
-        DB_PASS,
+        "mysql:host=" . 'localhost' . ";dbname=" . 'cherreramejia2' . ";charset=utf8mb4",
+        'cherreramejia2',
+        'cherreramejia2',
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
     );
 } catch(PDOException $e) {
