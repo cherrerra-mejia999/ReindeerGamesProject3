@@ -361,10 +361,18 @@ async function saveGameResult() {
     };
     
     // Update local stats
+    const prevTotal = state.stats.totalGames;
     state.stats.totalGames++;
-    const prevTotal = state.stats.totalGames - 1;
-    state.stats.avgTime = (state.stats.avgTime * prevTotal + state.game.time) / state.stats.totalGames;
-    state.stats.avgMoves = (state.stats.avgMoves * prevTotal + state.game.moves) / state.stats.totalGames;
+    
+    if (prevTotal === 0) {
+        // First game
+        state.stats.avgTime = state.game.time;
+        state.stats.avgMoves = state.game.moves;
+    } else {
+        // Calculate running average
+        state.stats.avgTime = (state.stats.avgTime * prevTotal + state.game.time) / state.stats.totalGames;
+        state.stats.avgMoves = (state.stats.avgMoves * prevTotal + state.game.moves) / state.stats.totalGames;
+    }
     
     // Save to localStorage
     localStorage.setItem('userStats', JSON.stringify(state.stats));
@@ -372,6 +380,8 @@ async function saveGameResult() {
     console.log('Local stats updated:', state.stats);
     console.log('Current user:', state.user);
     console.log('Session ID:', state.game.sessionId);
+    console.log('Game config mode:', state.config.mode);
+    console.log('Competitive mode:', state.config.competitiveMode);
     
     // Save to database if user is logged in
     if (state.user && state.game.sessionId) {
@@ -385,52 +395,67 @@ async function saveGameResult() {
                 moves: state.game.moves,
                 efficiency: efficiency
             });
-            console.log('Game session ended successfully:', endResult);
+            console.log('endGameSession API response:', endResult);
             
-            // Record leaderboard entry if in competitive mode
-            if (state.config.mode === 'competitive') {
-                console.log('Recording leaderboard entries for all categories...');
-                
-                // Record entry for the specific competitive mode (speed/moves)
-                const mainCategory = state.config.competitiveMode || 'speed';
-                await recordLeaderboardEntry(
-                    state.user.id,
-                    state.game.sessionId,
-                    {
-                        time: state.game.time,
-                        moves: state.game.moves,
-                        efficiency: efficiency
-                    },
-                    mainCategory
-                );
-                console.log(`Leaderboard entry recorded for ${mainCategory}`);
-                
-                // Also record for efficiency category
-                await recordLeaderboardEntry(
-                    state.user.id,
-                    state.game.sessionId,
-                    {
-                        time: state.game.time,
-                        moves: state.game.moves,
-                        efficiency: efficiency
-                    },
-                    'efficiency'
-                );
-                console.log('Leaderboard entry recorded for efficiency');
-                
-                // Also record for combined category
-                await recordLeaderboardEntry(
-                    state.user.id,
-                    state.game.sessionId,
-                    {
-                        time: state.game.time,
-                        moves: state.game.moves,
-                        efficiency: efficiency
-                    },
-                    'combined'
-                );
-                console.log('Leaderboard entry recorded for combined');
+            if (!endResult.success) {
+                console.error('Failed to end game session:', endResult.message);
             }
+            
+            // Always record leaderboard entries (remove mode check)
+            console.log('Recording leaderboard entries for all categories...');
+            
+            // Record entry for speed
+            const speedResult = await recordLeaderboardEntry(
+                state.user.id,
+                state.game.sessionId,
+                {
+                    time: state.game.time,
+                    moves: state.game.moves,
+                    efficiency: efficiency
+                },
+                'speed'
+            );
+            console.log('Speed leaderboard result:', speedResult);
+            
+            // Record for moves
+            const movesResult = await recordLeaderboardEntry(
+                state.user.id,
+                state.game.sessionId,
+                {
+                    time: state.game.time,
+                    moves: state.game.moves,
+                    efficiency: efficiency
+                },
+                'moves'
+            );
+            console.log('Moves leaderboard result:', movesResult);
+            
+            // Record for efficiency
+            const efficiencyResult = await recordLeaderboardEntry(
+                state.user.id,
+                state.game.sessionId,
+                {
+                    time: state.game.time,
+                    moves: state.game.moves,
+                    efficiency: efficiency
+                },
+                'efficiency'
+            );
+            console.log('Efficiency leaderboard result:', efficiencyResult);
+            
+            // Record for combined
+            const combinedResult = await recordLeaderboardEntry(
+                state.user.id,
+                state.game.sessionId,
+                {
+                    time: state.game.time,
+                    moves: state.game.moves,
+                    efficiency: efficiency
+                },
+                'combined'
+            );
+            console.log('Combined leaderboard result:', combinedResult);
+            
         } catch (error) {
             console.error('Error saving game to database:', error);
         }

@@ -182,6 +182,16 @@ if ($action === 'endGame') {
         ");
         $stmt->execute([$time, $moves, $efficiency, $sessionId]);
         
+        // Update user profile - get current values first
+        $stmt = $pdo->prepare("SELECT total_games, avg_efficiency FROM user_profiles WHERE user_id = ?");
+        $stmt->execute([$userId]);
+        $currentProfile = $stmt->fetch(PDO::FETCH_ASSOC);
+        $currentGames = $currentProfile['total_games'] ?? 0;
+        $currentAvgEff = $currentProfile['avg_efficiency'] ?? 0;
+        
+        // Calculate new average
+        $newAvgEfficiency = $currentGames == 0 ? $efficiency : (($currentAvgEff * $currentGames) + $efficiency) / ($currentGames + 1);
+        
         // Update user profile
         $stmt = $pdo->prepare("
             UPDATE user_profiles 
@@ -195,10 +205,10 @@ if ($action === 'endGame') {
                 best_moves = CASE 
                     WHEN best_moves IS NULL OR ? < best_moves 
                     THEN ? ELSE best_moves END,
-                avg_efficiency = ((avg_efficiency * (total_games - 1)) + ?) / total_games
+                avg_efficiency = ?
             WHERE user_id = ?
         ");
-        $stmt->execute([$time, $moves, $time, $time, $moves, $moves, $efficiency, $userId]);
+        $stmt->execute([$time, $moves, $time, $time, $moves, $moves, $newAvgEfficiency, $userId]);
         
         sendResponse(true, null, 'Game completed');
     } else {
